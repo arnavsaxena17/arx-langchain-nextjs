@@ -12,7 +12,7 @@ export function IntermediateStep(props: { message: Message }) {
       className={`ml-auto bg-green-600 rounded px-4 py-2 max-w-[80%] mb-8 whitespace-pre-wrap flex flex-col cursor-pointer`}
     >
       <div className={`text-right ${expanded ? "w-full" : ""}`} onClick={(e) => setExpanded(!expanded)}>
-        <code className="mr-2 bg-slate-600 px-2 py-1 rounded hover:text-blue-600">
+        <code className="px-2 py-1 mr-2 rounded bg-slate-600 hover:text-blue-600">
           🛠️ <b>{action.tool}</b>
         </code>
         <span className={expanded ? "hidden" : ""}>🔽</span>

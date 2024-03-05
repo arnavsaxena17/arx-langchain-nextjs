@@ -27,12 +27,23 @@ AI:`;
  */
 export async function POST(req: NextRequest) {
   try {
+    
+    // console.log("This is request ::", req);
     const body = await req.json();
+    console.log("This is request body::", body);
     const messages = body.messages ?? [];
+    console.log("This is request messages::", messages);
     const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
+    console.log("This is request formatted previous messages::", formattedPreviousMessages);
     const currentMessageContent = messages[messages.length - 1].content;
+    console.log("This is request formatted currentMessageContent::", currentMessageContent);
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
-
+    console.log("This is prompt:", prompt);
+    console.log("This is body:", body);
+    console.log("This is messages:", messages);
+    console.log("This is currentMessageContent:", currentMessageContent);
+    console.log("This is formattedPreviousMessages:", formattedPreviousMessages);
+    
     /**
      * You can also try e.g.:
      *
@@ -57,12 +68,11 @@ export async function POST(req: NextRequest) {
      * const chain = RunnableSequence.from([prompt, model, outputParser]);
      */
     const chain = prompt.pipe(model).pipe(outputParser);
-
-    const stream = await chain.stream({
-      chat_history: formattedPreviousMessages.join("\n"),
-      input: currentMessageContent,
-    });
-
+    // console.log("This is the final stream : ",chain);
+    
+    const stream = await chain.stream({ chat_history: formattedPreviousMessages.join("\n"), input: currentMessageContent, });
+    // console.log("This is stream:", stream);
+    
     return new StreamingTextResponse(stream);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });

@@ -7,10 +7,7 @@ import { SerpAPI } from "@langchain/community/tools/serpapi";
 import { Calculator } from "langchain/tools/calculator";
 import { AIMessage, ChatMessage, HumanMessage } from "@langchain/core/messages";
 
-import {
-  ChatPromptTemplate,
-  MessagesPlaceholder,
-} from "@langchain/core/prompts";
+import { ChatPromptTemplate, MessagesPlaceholder, } from "@langchain/core/prompts";
 
 export const runtime = "edge";
 
@@ -34,7 +31,10 @@ const AGENT_SYSTEM_TEMPLATE = `You are a talking recruiter named Polly. All fina
  */
 export async function POST(req: NextRequest) {
   try {
+    console.log("This is req:", req);
+    
     const body = await req.json();
+    console.log("This is body:", body);
     /**
      * We represent intermediate steps as system messages for display purposes,
      * but don't want them in the chat history.
@@ -43,21 +43,23 @@ export async function POST(req: NextRequest) {
       (message: VercelChatMessage) =>
         message.role === "user" || message.role === "assistant",
     );
+
+    console.log("This is messages::", messages);
+    
     const returnIntermediateSteps = body.show_intermediate_steps;
-    const previousMessages = messages
-      .slice(0, -1)
-      .map(convertVercelMessageToLangChainMessage);
+    const previousMessages = messages.slice(0, -1).map(convertVercelMessageToLangChainMessage);
     const currentMessageContent = messages[messages.length - 1].content;
+
+    console.log("This is returnIntermediateSteps:", returnIntermediateSteps);
+    console.log("This is previousMessages:", previousMessages);
+    console.log("This is currentMessageContent:", currentMessageContent);
+    
 
     // Requires process.env.SERPAPI_API_KEY to be set: https://serpapi.com/
     // You can remove this or use a different tool instead.
-    const tools = [new Calculator(), new SerpAPI()];
-    const chat = new ChatOpenAI({
-      modelName: "gpt-3.5-turbo-1106",
-      temperature: 0,
-      // IMPORTANT: Must "streaming: true" on OpenAI to enable final output streaming below.
-      streaming: true,
-    });
+    // IMPORTANT: Must "streaming: true" on OpenAI to enable final output streaming below.
+    const tools = [new Calculator(), new SerpAPI()]; 
+    const chat = new ChatOpenAI({ modelName: "gpt-3.5-turbo-1106", temperature: 0, streaming: true, });
 
     /**
      * Based on https://smith.langchain.com/hub/hwchase17/openai-functions-agent
@@ -67,25 +69,18 @@ export async function POST(req: NextRequest) {
      *
      * You can customize this prompt yourself!
      */
-    const prompt = ChatPromptTemplate.fromMessages([
-      ["system", AGENT_SYSTEM_TEMPLATE],
-      new MessagesPlaceholder("chat_history"),
-      ["human", "{input}"],
-      new MessagesPlaceholder("agent_scratchpad"),
-    ]);
+    const prompt = ChatPromptTemplate.fromMessages([ ["system", AGENT_SYSTEM_TEMPLATE], new MessagesPlaceholder("chat_history"), ["human", "{input}"], new MessagesPlaceholder("agent_scratchpad"), ]);
+    console.log("This is the prompt:", prompt);
+    console.log("This is the tools:", tools);
+    console.log("This is the chat:", chat);
+    
 
-    const agent = await createOpenAIFunctionsAgent({
-      llm: chat,
-      tools,
-      prompt,
-    });
-
-    const agentExecutor = new AgentExecutor({
-      agent,
-      tools,
-      // Set this if you want to receive all intermediate steps in the output of .invoke().
-      returnIntermediateSteps,
-    });
+    const agent = await createOpenAIFunctionsAgent({ llm: chat, tools, prompt });
+    console.log("This is the agent:", agent);
+    
+    
+    // Set this if you want to receive all intermediate steps in the output of .invoke().
+    const agentExecutor = new AgentExecutor({ agent, tools, returnIntermediateSteps });
 
     if (!returnIntermediateSteps) {
       /**
@@ -100,10 +95,9 @@ export async function POST(req: NextRequest) {
        *
        * See: https://js.langchain.com/docs/modules/agents/how_to/streaming#streaming-tokens
        */
-      const logStream = await agentExecutor.streamLog({
-        input: currentMessageContent,
-        chat_history: previousMessages,
-      });
+      const logStream = await agentExecutor.streamLog({ input: currentMessageContent, chat_history: previousMessages, });
+      console.log("This is logStream:", logStream);
+      
 
       const textEncoder = new TextEncoder();
       const transformStream = new ReadableStream({
@@ -124,6 +118,8 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      console.log("This is transformStream:", transformStream);
+      
       return new StreamingTextResponse(transformStream);
     } else {
       /**
@@ -131,14 +127,11 @@ export async function POST(req: NextRequest) {
        * We could also pick them out from `streamLog` chunks.
        * They are generated as JSON objects, so streaming them is a bit more complicated.
        */
-      const result = await agentExecutor.invoke({
-        input: currentMessageContent,
-        chat_history: previousMessages,
-      });
-      return NextResponse.json(
-        { output: result.output, intermediate_steps: result.intermediateSteps },
-        { status: 200 },
-      );
+      console.log("This is currentMessageContent:", currentMessageContent);
+      console.log("This is previousMessages:", previousMessages);
+      
+      const result = await agentExecutor.invoke({ input: currentMessageContent, chat_history: previousMessages, });
+      return NextResponse.json( { output: result.output, intermediate_steps: result.intermediateSteps }, { status: 200 } );
     }
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
