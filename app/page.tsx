@@ -37,6 +37,6 @@ export default function Home() {
     </>
   );
   return (
-    <ChatWindow endpoint="api/chat" emoji="🏴‍☠️" titleText="Patchy the Chatty Recruiter" placeholder="I'm an LLM pretending to be a recruiter! I will check if you are a good fit for my client and if you are I will try and help you secure the job!" emptyStateComponent={InfoCard} ></ChatWindow>
+    <ChatWindow endpoint="api/chat/chat" emoji="🏴‍☠️" titleText="Patchy the Chatty Recruiter" placeholder="I'm an LLM pretending to be a recruiter! I will check if you are a good fit for my client and if you are I will try and help you secure the job!" emptyStateComponent={InfoCard} ></ChatWindow>
   );
 }
