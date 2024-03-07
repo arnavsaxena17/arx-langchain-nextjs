@@ -10,7 +10,7 @@ import { ChatMessageBubble } from "@/components/ChatMessageBubble";
 import { UploadDocumentsForm } from "@/components/UploadDocumentsForm";
 import { IntermediateStep } from "./IntermediateStep";
 import { ButtonSubmit } from "./ButtonSubmit";
-import { InputBar } from "./InputBar";
+// import { InputBar } from "./InputBar";
 
 export function ChatWindow(props: { endpoint: string, emptyStateComponent: ReactElement, placeholder?: string, titleText?: string, emoji?: string; showIngestForm?: boolean, showIntermediateStepsToggle?: boolean }) {
   const messageContainerRef = useRef<HTMLDivElement | null>(null);
@@ -49,12 +49,6 @@ export function ChatWindow(props: { endpoint: string, emptyStateComponent: React
   
     console.log("Messages ::::", messages);
 
-  //   const buttonSubmit = <button type="submit" className="px-8 py-4 rounded shrink-0 bg-sky-600 w-28">
-  //   <div role="status" className={`${(chatEndpointIsLoading || intermediateStepsLoading) ? "" : "hidden"} flex justify-center`}>
-  //     <span className="sr-only">Loading...</span>
-  //   </div>
-  //   <span className={(chatEndpointIsLoading || intermediateStepsLoading) ? "hidden" : ""}>Send</span>
-  // </button>
   
   const chatMessages = messages.length > 0 ? ([...messages].reverse().map((m, i) => {
     const sourceKey = (messages.length - 1 - i).toString();
@@ -88,54 +82,6 @@ export function ChatWindow(props: { endpoint: string, emptyStateComponent: React
       // await sendMessageSteps()
     }
   }
-
-  // async function sendMessageSteps(){
-  //   console.log("Got to do some message Steps");
-    
-  //   setInput("");
-  //   const messagesWithUserReply = messages.concat({ id: messages.length.toString(), content: input, role: "user" });
-  //   setMessages(messagesWithUserReply);
-  //   console.log("messages::",messages);
-  //   console.log("endpoint::",endpoint);
-    
-    
-  //   const response = await fetch(endpoint, {
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       messages: messagesWithUserReply,
-  //       show_intermediate_steps: true
-  //     })
-  //   });
-  //   const json = await response.json();
-  //   console.log("respons jsone:::", json);
-    
-  //   setIntermediateStepsLoading(false);
-  //   if (response.status === 200) {
-  //     console.log("This is the response json::", json);
-      
-  //     // Represent intermediate steps as system messages for display purposes
-  //     const intermediateStepMessages = (json.intermediate_steps ?? []).map((intermediateStep: AgentStep, i: number) => {
-  //       return {id: (messagesWithUserReply.length + i).toString(), content: JSON.stringify(intermediateStep), role: "system"};
-  //     });
-  //     console.log("intermediateStepMessages::", intermediateStepMessages);
-  //     console.log("messagesWithUserReply::", messagesWithUserReply);
-      
-  //     const newMessages = messagesWithUserReply;
-  //     for (const message of intermediateStepMessages) {
-  //       newMessages.push(message);
-  //       setMessages([...newMessages]);
-  //       await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-  //     }
-  //     console.log("messages::",messages);
-  //     setMessages([...newMessages, { id: (newMessages.length + intermediateStepMessages.length).toString(), content: json.output, role: "assistant" }]);
-  //     console.log("messages::",messages);
-  //   } else {
-  //     if (json.error) {
-  //       toast(json.error, { theme: "dark" });
-  //       throw new Error(json.error);
-  //     }
-  //   }
-  // }
 
   const sendMessageSequence = async (messagesSequence: string[]) => {
     console.log("Got to send message Sequence");
